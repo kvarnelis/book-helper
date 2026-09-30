@@ -1,0 +1,64 @@
+name: BookHelper
+settings:
+  SWIFT_VERSION: 5.0
+  MACOSX_DEPLOYMENT_TARGET: 13.0
+  CODE_SIGN_STYLE: Automatic
+  ENABLE_HARDENED_RUNTIME: YES
+  ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS: YES
+  CLANG_ENABLE_OBJC_ARC: YES
+  SWIFT_EMIT_LOC_STRINGS: YES
+
+targets:
+  BookHelper:
+    type: application
+    platform: macOS
+    deploymentTarget: "13.0"
+    productName: "Book Helper"
+    bundleId: com.papershelper.bookhelper
+
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.papershelper.bookhelper
+      PRODUCT_NAME: Book Helper
+      MARKETING_VERSION: "1.0"
+      CURRENT_PROJECT_VERSION: 20260811.1
+      INFOPLIST_FILE: Sources/BookHelper/Info.plist
+      GENERATE_INFOPLIST_FILE: YES
+      ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+      INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.productivity
+      INFOPLIST_KEY_NSHumanReadableCopyright: ""
+      COMBINE_HIDPI_IMAGES: YES
+      EXECUTABLE_NAME: "Book Helper"
+      LD_RUNPATH_SEARCH_PATHS: "$(inherited) @executable_path/../Frameworks"
+
+    sources:
+      - Sources/BookHelper
+
+    resources:
+      - Sources/BookHelper/Assets.xcassets
+
+schemes:
+  BookHelper:
+    build:
+      targets:
+        BookHelper: all
+    run:
+      config: Debug
+      executable: BookHelper
+    archive:
+      config: Release
+      executable: BookHelper
+
+configurations:
+  Debug:
+    settings:
+      GCC_OPTIMIZATION_LEVEL: 0
+      GCC_PREPROCESSOR_DEFINITIONS: DEBUG=1 $(inherited)
+      MTL_ENABLE_DEBUG_INFO: INCLUDE_SOURCE
+      ONLY_ACTIVE_ARCH: YES
+      SWIFT_ACTIVE_COMPILATION_CONDITIONS: DEBUG $(inherited)
+      SWIFT_OPTIMIZATION_LEVEL: -Onone
+  Release:
+    settings:
+      GCC_OPTIMIZATION_LEVEL: fast
+      MTL_ENABLE_DEBUG_INFO: "NO"
+      SWIFT_COMPILATION_MODE: wholemodule
