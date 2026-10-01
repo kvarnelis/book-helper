@@ -14,5 +14,9 @@ struct BookHelperApp: App {
         .windowStyle(.titleBar)
         .windowResizability(.contentSize)
         .defaultSize(width: 720, height: 520)
+
+        Settings {
+            BookHelperSettingsView()
+        }
     }
 }

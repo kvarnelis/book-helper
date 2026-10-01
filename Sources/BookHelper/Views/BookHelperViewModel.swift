@@ -1,5 +1,6 @@
 import Combine
 import Foundation
+import AppKit
 
 @MainActor
 final class BookHelperViewModel: ObservableObject {
@@ -69,8 +70,87 @@ final class BookHelperViewModel: ObservableObject {
         statusMessage = "Importing \(selected.count) book\(selected.count == 1 ? "" : "s") to Zotero…"
         for item in selected {
             item.status = .importingToZotero
-            Task {
-                await importToZotero(item)
+        }
+
+        Task {
+            await importSelectedBatch(selected)
+        }
+    }
+
+    private func importSelectedBatch(_ items: [BookFileItem]) async {
+        var successCount = 0
+        var failureCount = 0
+
+        await withTaskGroup(of: Bool.self) { group in
+            for item in items {
+                group.addTask {
+                    await self.importToZotero(item)
+                }
+            }
+
+            for await success in group {
+                if success {
+                    successCount += 1
+                } else {
+                    failureCount += 1
+                }
+            }
+        }
+
+        // Switch to Zotero only if all imports succeeded
+        if failureCount == 0 && successCount > 0 {
+            switchToZoteroIfPreferred()
+        }
+    }
+
+    private func importToZotero(_ item: BookFileItem) async -> Bool {
+        guard let metadata = item.metadata else {
+            item.status = .error("No metadata")
+            return false
+        }
+
+        // Rename the PDF first to avoid importing with raw download filename
+        let currentURL = item.currentURL
+        do {
+            let newURL = try await Task.detached(priority: .userInitiated) {
+                try BookRenamer.rename(pdfURL: currentURL, metadata: metadata)
+            }.value
+            item.currentURL = newURL
+        } catch {
+            item.status = .error(error.localizedDescription)
+            statusMessage = error.localizedDescription
+            return false
+        }
+
+        // Upload to Zotero with the renamed PDF
+        do {
+            try await ZoteroClient.shared.importBook(metadata: metadata, pdfURL: item.currentURL)
+            item.status = .done
+            statusMessage = "Imported \(metadata.fullTitle) to Zotero"
+            return true
+        } catch {
+            item.status = .zoteroError(error.localizedDescription)
+            statusMessage = error.localizedDescription
+            return false
+        }
+    }
+
+    private func switchToZoteroIfPreferred() {
+        guard UserDefaults.standard.object(forKey: "switchToZoteroAfterImporting") as? Bool ?? true else { return }
+
+        let zoteroBundle = "org.zotero.zotero"
+        guard let zoteroURL = NSWorkspace.shared.urlForApplication(withBundleIdentifier: zoteroBundle) else {
+            return
+        }
+
+        let configuration = NSWorkspace.OpenConfiguration()
+        configuration.activates = true
+
+        Task {
+            do {
+                try await NSWorkspace.shared.openApplication(at: zoteroURL, configuration: configuration)
+            } catch {
+                // Silently fail - Zotero is running (import succeeded), but activation failed
             }
         }
     }
@@ -201,36 +281,6 @@ final class BookHelperViewModel: ObservableObject {
             } catch {
                 await viewModel.failRename(itemID: itemID, message: error.localizedDescription)
             }
-        }
-    }
-
-    private func importToZotero(_ item: BookFileItem) async {
-        guard let metadata = item.metadata else {
-            item.status = .error("No metadata")
-            return
-        }
-
-        // Rename the PDF first to avoid importing with raw download filename
-        let currentURL = item.currentURL
-        do {
-            let newURL = try await Task.detached(priority: .userInitiated) {
-                try BookRenamer.rename(pdfURL: currentURL, metadata: metadata)
-            }.value
-            item.currentURL = newURL
-        } catch {
-            item.status = .error(error.localizedDescription)
-            statusMessage = error.localizedDescription
-            return
-        }
-
-        // Upload to Zotero with the renamed PDF
-        do {
-            try await ZoteroClient.shared.importBook(metadata: metadata, pdfURL: item.currentURL)
-            item.status = .done
-            statusMessage = "Imported \(metadata.fullTitle) to Zotero"
-        } catch {
-            item.status = .zoteroError(error.localizedDescription)
-            statusMessage = error.localizedDescription
         }
     }
 

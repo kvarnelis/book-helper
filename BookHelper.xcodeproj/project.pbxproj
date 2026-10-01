@@ -17,6 +17,7 @@
 		DA812AD1B6401915DB820D05 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A506D815E2D07FE332159F04 /* Assets.xcassets */; };
 		DBD6B08BD2AD4DE5C7B91A1C /* BookHelperViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5827A6561A5ADBFD12D9C29 /* BookHelperViewModel.swift */; };
 		DCB9228F889B74206E9B6D50 /* BookHelperContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E932C0811EA87A88DEEA2F05 /* BookHelperContentView.swift */; };
+		E6B9FE1513DD0E1782DA33F9 /* BookHelperSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8DC49EF19417D232812D188 /* BookHelperSettingsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +33,7 @@
 		E932C0811EA87A88DEEA2F05 /* BookHelperContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookHelperContentView.swift; sourceTree = "<group>"; };
 		EBE7B77E13FEC34E0413FD89 /* BookDropZone.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookDropZone.swift; sourceTree = "<group>"; };
 		EFABDFE9265C2DA55FAFCCD9 /* BookHelperApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookHelperApp.swift; sourceTree = "<group>"; };
+		F8DC49EF19417D232812D188 /* BookHelperSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookHelperSettingsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -40,6 +42,7 @@
 			children = (
 				EBE7B77E13FEC34E0413FD89 /* BookDropZone.swift */,
 				E932C0811EA87A88DEEA2F05 /* BookHelperContentView.swift */,
+				F8DC49EF19417D232812D188 /* BookHelperSettingsView.swift */,
 				E5827A6561A5ADBFD12D9C29 /* BookHelperViewModel.swift */,
 			);
 			path = Views;
@@ -167,6 +170,7 @@
 				8FC2D0D7F41A7634E863145E /* BookDropZone.swift in Sources */,
 				80B6471D3C5729744B6C98EA /* BookHelperApp.swift in Sources */,
 				DCB9228F889B74206E9B6D50 /* BookHelperContentView.swift in Sources */,
+				E6B9FE1513DD0E1782DA33F9 /* BookHelperSettingsView.swift in Sources */,
 				DBD6B08BD2AD4DE5C7B91A1C /* BookHelperViewModel.swift in Sources */,
 				2DB5516FB8E3D7543B4BF740 /* BookISBNExtractor.swift in Sources */,
 				6AD174922775FEA220EE69EC /* BookMetadata.swift in Sources */,
@@ -184,7 +188,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 20260811.1;
+				CURRENT_PROJECT_VERSION = 20260811.2;
 				EXECUTABLE_NAME = "Book Helper";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Sources/BookHelper/Info.plist;
@@ -192,7 +196,7 @@
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.papershelper.bookhelper;
 				PRODUCT_NAME = "Book Helper";
 				SDKROOT = macosx;
@@ -204,7 +208,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 20260811.1;
+				CURRENT_PROJECT_VERSION = 20260811.2;
 				EXECUTABLE_NAME = "Book Helper";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Sources/BookHelper/Info.plist;
@@ -212,7 +216,7 @@
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.papershelper.bookhelper;
 				PRODUCT_NAME = "Book Helper";
 				SDKROOT = macosx;
