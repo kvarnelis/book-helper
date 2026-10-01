@@ -104,7 +104,8 @@ actor ZoteroClient {
         request.timeoutInterval = timeout
         request.setValue("application/pdf", forHTTPHeaderField: "Content-Type")
         request.setValue(connectorAPIVersion, forHTTPHeaderField: "X-Zotero-Connector-API-Version")
-        request.setValue(metadataHeader, forHTTPHeaderField: "X-Metadata")
+        // Escape non-ASCII characters in the header value as \uXXXX to ensure HTTP compatibility
+        request.setValue(Self.escapeNonASCII(metadataHeader), forHTTPHeaderField: "X-Metadata")
 
         let (_, response) = try await URLSession.shared.upload(for: request, fromFile: pdfURL)
         try Self.validate(response)
@@ -150,6 +151,30 @@ actor ZoteroClient {
             "firstName": parts.dropLast().joined(separator: " "),
             "lastName": parts.last ?? ""
         ]
+    }
+
+    /// Escapes all non-ASCII characters in a string as \uXXXX escape sequences.
+    /// This ensures the string can be safely transmitted in HTTP headers, which require ASCII-only values.
+    /// For characters above U+FFFF, uses UTF-16 surrogate pairs as per JSON spec.
+    private static func escapeNonASCII(_ str: String) -> String {
+        var result = ""
+        for scalar in str.unicodeScalars {
+            if scalar.value < 128 {
+                // ASCII character: pass through
+                result.append(Character(scalar))
+            } else if scalar.value <= 0xFFFF {
+                // BMP character: single \uXXXX escape
+                result.append(String(format: "\\u%04x", scalar.value))
+            } else {
+                // Non-BMP character: convert to UTF-16 surrogate pair
+                let codePoint = scalar.value
+                let adjusted = codePoint - 0x10000
+                let high = 0xD800 + (adjusted >> 10)
+                let low = 0xDC00 + (adjusted & 0x3FF)
+                result.append(String(format: "\\u%04x\\u%04x", high, low))
+            }
+        }
+        return result
     }
 }
 

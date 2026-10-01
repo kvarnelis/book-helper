@@ -210,6 +210,20 @@ final class BookHelperViewModel: ObservableObject {
             return
         }
 
+        // Rename the PDF first to avoid importing with raw download filename
+        let currentURL = item.currentURL
+        do {
+            let newURL = try await Task.detached(priority: .userInitiated) {
+                try BookRenamer.rename(pdfURL: currentURL, metadata: metadata)
+            }.value
+            item.currentURL = newURL
+        } catch {
+            item.status = .error(error.localizedDescription)
+            statusMessage = error.localizedDescription
+            return
+        }
+
+        // Upload to Zotero with the renamed PDF
         do {
             try await ZoteroClient.shared.importBook(metadata: metadata, pdfURL: item.currentURL)
             item.status = .done
