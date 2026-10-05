@@ -18,7 +18,7 @@ struct BookHelperSettingsView: View {
 
             Toggle("Remove books after importing to Zotero", isOn: $removeImportedBooks)
 
-            Text("Successfully imported books will disappear from Book Helper. Their PDF files and Zotero items are not deleted.")
+            Text("Successfully imported books will disappear from Book Helper. Their original files and Zotero items are not deleted.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)

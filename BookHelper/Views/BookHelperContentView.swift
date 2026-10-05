@@ -55,11 +55,11 @@ struct BookHelperContentView: View {
             Button {
                 viewModel.importSelectedToZotero()
             } label: {
-                Label("Import PDFs to Zotero", systemImage: "books.vertical.fill")
+                Label("Import to Zotero", systemImage: "books.vertical.fill")
             }
             .buttonStyle(.borderedProminent)
             .disabled(viewModel.zoteroReadyCount == 0)
-            .help("Only selected PDFs are imported. EPUB import is not available yet.")
+            .help("Import selected PDFs and DRM-free EPUBs with their book metadata.")
 
             Spacer()
 
@@ -69,7 +69,7 @@ struct BookHelperContentView: View {
                 Image(systemName: "checkmark.circle")
             }
             .buttonStyle(.borderless)
-            .help("Clear completed")
+            .help("Clear successfully imported books; keep books that were only renamed")
             .disabled(!viewModel.items.contains { $0.isComplete })
 
             Button {
@@ -165,7 +165,7 @@ private struct BookItemRow: View {
                 }
 
                 if item.format == .epub {
-                    Text("EPUB · Rename only · Zotero import unavailable")
+                    Text("EPUB")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }

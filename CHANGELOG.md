@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.0.1 — 2026-10-05
+
+Build: `20261005.2`.
+
+- Import DRM-free EPUBs into Zotero as book items with the original EPUB attached, including mixed PDF/EPUB batches.
+- Preserve format-specific attachment MIME, skip EPUB page counts, and validate EPUBs before creating Zotero items.
+- Keep renamed books available until imported; clear only successfully imported books.
+- Report a partial import when Zotero does not create the attachment, including HTTP 200 responses from libraries that disallow files.
+- Extend offline regression coverage for EPUB attachment contents, parent linkage, mixed batches, completion and error handling.
+
 ## 1.0 — 2026-10-05
 
 Build: `20261005.1`. First stable release; supersedes the internal 1.1 and 1.2 development labels.

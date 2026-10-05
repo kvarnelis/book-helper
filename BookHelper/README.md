@@ -1,6 +1,6 @@
 # Book Helper
 
-A small macOS app for identifying and renaming PDF and DRM-free EPUB books. PDFs can also be imported into Zotero.
+A small macOS app for identifying and renaming PDF and DRM-free EPUB books. Both formats can be imported into Zotero.
 
 ## Workflow
 
@@ -8,12 +8,12 @@ A small macOS app for identifying and renaming PDF and DRM-free EPUB books. PDFs
 2. EPUBs use embedded metadata first, with bounded XHTML text and filename fallbacks. PDFs scan front and back pages for an ISBN.
 3. An EPUB with a usable embedded title is ready offline. When a title is missing, the app uses the existing ISBN, Library of Congress and filename metadata lookups.
 4. Review or edit the title.
-5. Click **Rename Books** to rename the file without changing its contents or extension. **Import PDFs to Zotero** creates a book item and attaches a selected PDF. EPUBs are excluded from that action.
-6. **Clear completed** removes renamed EPUBs and imported PDFs from the list, keeping their files.
+5. Click **Rename Books** to rename the file without changing its contents or extension. **Import to Zotero** renames each selected PDF or DRM-free EPUB, creates a book item, and attaches the original file.
+6. **Clear completed** removes successfully imported books from the list, keeping their files. Books that were only renamed stay available for import; remove them with their row’s remove button when finished.
 
 Zotero must be open during import. Book Helper talks only to Zotero's local connector on this Mac; no Zotero account or API key is required.
 
-Use **Book Helper → Settings** to remove successfully imported books from the list automatically. This never deletes the original PDF. After an import, the status bar can bring Zotero forward with the imported book selected.
+Use **Book Helper → Settings** to remove successfully imported books from the list automatically. This never deletes the original PDF or EPUB. After an import, the status bar can bring Zotero forward with the imported book selected.
 
 If a PDF has no readable ISBN, enter one in the row and run the lookup manually.
 

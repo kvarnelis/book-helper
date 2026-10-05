@@ -4,16 +4,23 @@ import PDFKit
 actor ZoteroClient {
     static let shared = ZoteroClient()
 
-    private let baseURL = URL(string: "http://127.0.0.1:23119")!
+    private let baseURL: URL
+    private let epubExtractor = EPUBExtractor()
     private let connectorAPIVersion = "3"
     private let session: URLSession
 
-    init(session: URLSession = .shared) { self.session = session }
+    init(session: URLSession = .shared,
+         baseURL: URL = URL(string: "http://127.0.0.1:23119")!) {
+        self.session = session
+        self.baseURL = baseURL
+    }
 
-    func importBook(metadata: BookMetadata, pdfURL: URL) async throws {
-        guard BookFileFormat(url: pdfURL) == .pdf else {
+    func importBook(metadata: BookMetadata, fileURL: URL) async throws {
+        guard let format = BookFileFormat(url: fileURL) else {
             throw ZoteroError.unsupportedFileType
         }
+        // Validate again at the service boundary before creating any Zotero item.
+        if format == .epub { _ = try await epubExtractor.extract(from: fileURL) }
         try await ping()
 
         let sessionID = UUID().uuidString.lowercased()
@@ -27,7 +34,7 @@ actor ZoteroClient {
         add(metadata.year, to: &item, as: "date")
         add(metadata.publisher, to: &item, as: "publisher")
         add(metadata.isbn, to: &item, as: "ISBN")
-        if let pageCount = PDFDocument(url: pdfURL)?.pageCount, pageCount > 0 {
+        if format == .pdf, let pageCount = PDFDocument(url: fileURL)?.pageCount, pageCount > 0 {
             item["numPages"] = String(pageCount)
         }
 
@@ -52,8 +59,8 @@ actor ZoteroClient {
         let attachmentMetadata: [String: Any] = [
             "sessionID": sessionID,
             "parentItemID": itemID,
-            "url": pdfURL.absoluteString,
-            "title": pdfURL.lastPathComponent
+            "url": fileURL.absoluteString,
+            "title": fileURL.lastPathComponent
         ]
         let attachmentHeader = try JSONSerialization.data(withJSONObject: attachmentMetadata)
         guard let attachmentHeaderValue = String(data: attachmentHeader, encoding: .utf8) else {
@@ -61,8 +68,9 @@ actor ZoteroClient {
         }
 
         do {
-            try await uploadPDF(
-                at: pdfURL,
+            try await uploadAttachment(
+                at: fileURL,
+                contentType: format.contentType,
                 metadataHeader: attachmentHeaderValue,
                 timeout: 120
             )
@@ -100,20 +108,25 @@ actor ZoteroClient {
         try Self.validate(response)
     }
 
-    private func uploadPDF(
-        at pdfURL: URL,
+    private func uploadAttachment(
+        at fileURL: URL,
+        contentType: String,
         metadataHeader: String,
         timeout: TimeInterval
     ) async throws {
         var request = URLRequest(url: baseURL.appendingPathComponent("/connector/saveAttachment"))
         request.httpMethod = "POST"
         request.timeoutInterval = timeout
-        request.setValue("application/pdf", forHTTPHeaderField: "Content-Type")
+        request.setValue(contentType, forHTTPHeaderField: "Content-Type")
         request.setValue(connectorAPIVersion, forHTTPHeaderField: "X-Zotero-Connector-API-Version")
         request.setValue(Self.escapeNonASCII(metadataHeader), forHTTPHeaderField: "X-Metadata")
 
-        let (_, response) = try await session.upload(for: request, fromFile: pdfURL)
+        let (_, response) = try await session.upload(for: request, fromFile: fileURL)
         try Self.validate(response)
+        // The connector returns 200 without saving when the library cannot store files.
+        guard (response as? HTTPURLResponse)?.statusCode == 201 else {
+            throw ZoteroError.attachmentNotCreated
+        }
     }
 
     private func add(_ value: String?, to item: inout [String: Any], as key: String) {
@@ -188,22 +201,25 @@ enum ZoteroError: LocalizedError {
     case invalidResponse
     case invalidAttachmentMetadata
     case httpError(Int)
+    case attachmentNotCreated
     case attachmentFailed(String)
 
     var errorDescription: String? {
         switch self {
         case .unsupportedFileType:
-            return "Zotero import currently supports PDF files only. EPUBs can be renamed."
+            return "Zotero import supports PDF and DRM-free EPUB files only."
         case .notRunning:
             return "Zotero is not running or its local connector is unavailable. Open Zotero and try again."
         case .invalidResponse:
             return "Zotero returned an invalid response."
         case .invalidAttachmentMetadata:
-            return "Could not prepare the PDF attachment metadata."
+            return "Could not prepare the book attachment metadata."
         case .httpError(let statusCode):
             return "Zotero rejected the import (HTTP \(statusCode))."
+        case .attachmentNotCreated:
+            return "Zotero did not save the attachment. Select a library that allows file attachments and try again."
         case .attachmentFailed(let message):
-            return "The book was created in Zotero, but the PDF could not be attached: \(message)"
+            return "The book was created in Zotero, but the file could not be attached: \(message)"
         }
     }
 }

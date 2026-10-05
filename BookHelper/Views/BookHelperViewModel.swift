@@ -33,9 +33,6 @@ final class BookHelperViewModel: ObservableObject {
 
     var defaultStatusMessage: String {
         if items.isEmpty { return "Add PDFs or DRM-free EPUBs." }
-        if items.contains(where: { $0.format == .epub }) {
-            return "EPUBs: rename only · \(zoteroReadyCount) PDF\(zoteroReadyCount == 1 ? "" : "s") ready for Zotero"
-        }
         return "\(zoteroReadyCount) ready for Zotero"
     }
     private var itemObservers: [UUID: AnyCancellable] = [:]
@@ -309,7 +306,7 @@ final class BookHelperViewModel: ObservableObject {
         }
 
         do {
-            try await zoteroClient.importBook(metadata: metadata, pdfURL: item.currentURL)
+            try await zoteroClient.importBook(metadata: metadata, fileURL: item.currentURL)
             item.status = .done
             zoteroImportNotice = ZoteroImportNotice(bookTitle: metadata.fullTitle)
             statusMessage = nil
@@ -330,9 +327,7 @@ final class BookHelperViewModel: ObservableObject {
         guard let item = items.first(where: { $0.id == itemID }) else { return }
         item.currentURL = newURL
         item.status = .renamed
-        statusMessage = item.format == .epub
-            ? "Renamed \(newURL.lastPathComponent)"
-            : "Renamed \(newURL.lastPathComponent); ready to import to Zotero"
+        statusMessage = "Renamed \(newURL.lastPathComponent); ready to import to Zotero"
     }
 
     private func failRename(itemID: UUID, message: String) {

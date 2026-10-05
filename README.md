@@ -1,6 +1,6 @@
 # Book Helper
 
-Book Helper is a native macOS app for identifying and renaming poorly named PDF and DRM-free EPUB books. PDFs can also be imported into Zotero.
+Book Helper is a native macOS app for identifying and renaming poorly named PDF and DRM-free EPUB books. Both formats can be imported into Zotero.
 
 ![Book Helper showing book metadata and PDF import controls](docs/images/book-helper.png)
 
@@ -12,27 +12,27 @@ Drop in one or more PDFs or EPUBs and Book Helper will:
 - fall back to title/author filename matching or Library of Congress metadata;
 - let you review and correct the title;
 - rename the book while preserving its extension and contents; and
-- optionally create a Zotero book item with a selected PDF attached.
+- optionally create a Zotero book item with the selected PDF or EPUB attached.
 
-EPUBs with an embedded title are ready to rename offline. EPUB import into Zotero is not available yet; EPUBs are excluded from the Zotero action even in mixed batches.
+EPUBs with an embedded title are ready to rename offline. Both PDFs and DRM-free EPUBs can be imported into a running Zotero instance, including mixed batches.
 
 ## Download
 
-The current source build is **1.0 (20261005.1)** with EPUB support. This is the first stable release; earlier 1.1 and 1.2 labels were development builds.
+The current source build is **1.0.1 (20261005.2)** with PDF and EPUB import into Zotero. The stable release series began with 1.0; earlier 1.1 and 1.2 labels were development builds.
 
-Download the signed and notarized app from the [Book Helper 1.0 release](https://github.com/kvarnelis/book-helper/releases/tag/v1.0). Choose the DMG for drag-to-Applications installation or the ZIP for the app bundle.
+Download signed and notarized builds from the [Book Helper releases](https://github.com/kvarnelis/book-helper/releases). Choose the DMG for drag-to-Applications installation or the ZIP for the app bundle.
 
-Book Helper 1.0 requires macOS 13 or later on Apple silicon. Drag the app to Applications and open it normally.
+Book Helper requires macOS 13 or later on Apple silicon. Drag the app to Applications and open it normally.
 
 ## Use
 
 1. Drop PDF or DRM-free EPUB files into Book Helper, or click **Add Books**.
 2. Review the detected metadata. Enter an ISBN manually if none was found.
 3. Select the books you want to process.
-4. Choose **Rename Books**. For PDFs, you may also choose **Import PDFs to Zotero**.
-5. Use **Clear completed** to remove renamed EPUBs or imported PDFs from the list without deleting their files.
+4. Choose **Rename Books**, or **Import to Zotero** to rename and attach the selected PDFs or EPUBs.
+5. Use **Clear completed** to remove successfully imported books without deleting their files. Books that were only renamed stay available for import; use a row’s remove button if you are finished with it.
 
-Zotero must be open for import. Book Helper creates a book item and attaches the local PDF through Zotero's connector service.
+Zotero must be open for import. Book Helper creates a book item and attaches the original PDF or EPUB through Zotero's local connector service. No Zotero account or API key is required. Page counts are recorded for PDFs only.
 
 ## Metadata and privacy
 

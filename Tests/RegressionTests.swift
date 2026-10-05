@@ -23,7 +23,8 @@ private final class CaptureProtocol: URLProtocol {
     struct Captured { let request: URLRequest; let body: Data }
     private static let lock = NSLock()
     private static var storage: [Captured] = []
-    static var failAttachment = false
+    static var attachmentStatus = 201
+    static var saveItemsStatus = 201
     static func reset() { lock.lock(); defer { lock.unlock() }; storage = [] }
     static var requests: [Captured] { lock.lock(); defer { lock.unlock() }; return storage }
     override class func canInit(with request: URLRequest) -> Bool { true }
@@ -40,7 +41,9 @@ private final class CaptureProtocol: URLProtocol {
             }
         }
         Self.lock.lock(); Self.storage.append(Captured(request: request, body: body)); Self.lock.unlock()
-        client?.urlProtocol(self, didReceive: HTTPURLResponse(url: request.url!, statusCode: Self.failAttachment && request.url?.path == "/connector/saveAttachment" ? 500 : 200, httpVersion: nil, headerFields: nil)!, cacheStoragePolicy: .notAllowed)
+        let status = request.url?.path == "/connector/saveAttachment" ? Self.attachmentStatus
+            : request.url?.path == "/connector/saveItems" ? Self.saveItemsStatus : 200
+        client?.urlProtocol(self, didReceive: HTTPURLResponse(url: request.url!, statusCode: status, httpVersion: nil, headerFields: nil)!, cacheStoragePolicy: .notAllowed)
         client?.urlProtocol(self, didLoad: Data("{}".utf8))
         client?.urlProtocolDidFinishLoading(self)
     }
@@ -84,6 +87,14 @@ struct RegressionTests {
         let fixtures = URL(fileURLWithPath: CommandLine.arguments[1])
         let output = URL(fileURLWithPath: CommandLine.arguments[2])
         func fixture(_ name: String) -> URL { fixtures.appendingPathComponent(name) }
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [CaptureProtocol.self]
+        let session = URLSession(configuration: config)
+        defer { session.invalidateAndCancel() }
+        let client = ZoteroClient(session: session)
+        let suite = "BookHelperRegression-" + UUID().uuidString
+        let preferences = UserDefaults(suiteName: suite)!
+        defer { preferences.removePersistentDomain(forName: suite) }
         let reader = EPUBExtractor()
         let normal = try await reader.extract(from: fixture("metadata.epub"))
         try expect(normal.metadata?.title == "A Test Book" && normal.metadata?.authors == ["Ada Author"], "Embedded title and author")
@@ -137,20 +148,20 @@ struct RegressionTests {
         try expect(BookFileFormat.contentTypes.contains(.epub) && BookFileFormat.contentTypes.contains(.pdf), "Picker exposes PDF and EPUB types")
 
         let lookups = StubLookups()
-        let vm = BookHelperViewModel(lookupService: lookups)
+        let vm = BookHelperViewModel(lookupService: lookups, zoteroClient: client, preferences: preferences, activateZotero: {})
         vm.handleDroppedURLs([fixture("metadata.epub"), fixture("title-only.epub"), fixture("metadata.epub"), fixture("other.txt")])
         try await waitUntilIdle(vm)
         let calls = await lookups.calls
         try expect(vm.items.count == 2 && vm.renameReadyCount == 2 && calls.isEmpty, "Embedded EPUB metadata is ready offline; duplicate and unsupported drops ignored")
-        try expect(vm.zoteroReadyCount == 0 && vm.defaultStatusMessage.contains("rename only"), "EPUB-only selection disables Zotero with explanation")
-        vm.importSelectedToZotero()
-        try expect(vm.items.allSatisfy { $0.status == .ready }, "EPUB import action has no effect")
+        try expect(vm.zoteroReadyCount == 2 && vm.defaultStatusMessage == "2 ready for Zotero", "EPUB-only selection is eligible for Zotero")
+        vm.clearCompleted()
+        try expect(vm.items.count == 2 && vm.items.allSatisfy { $0.status == .ready }, "Clear completed retains EPUBs awaiting import")
         vm.handleDroppedURLs([fixture("body-isbn.epub"), fixture("Writer - A Filename Book.epub"), fixture("9780306406157.epub"), pdf, fixture("drm.epub")])
         try await waitUntilIdle(vm)
         try expect(vm.items.first { $0.filename == "body-isbn.epub" }?.metadata?.title == "Looked-up Book", "EPUB text ISBN feeds existing lookup flow")
         try expect(vm.items.first { $0.filename == "Writer - A Filename Book.epub" }?.metadata?.title == "A Filename Book", "EPUB filename title/author fallback")
         try expect(vm.items.first { $0.filename == "9780306406157.epub" }?.metadata?.title == "Looked-up Book", "EPUB filename ISBN fallback")
-        try expect(vm.zoteroReadyCount == 1 && vm.items.first { $0.currentURL == pdf }?.status == .ready, "Mixed batch counts only PDF for Zotero and preserves PDF identification")
+        try expect(vm.zoteroReadyCount == 6 && vm.items.first { $0.currentURL == pdf }?.status == .ready, "Mixed batch counts readable PDF/EPUB and preserves PDF identification")
         let protected = vm.items.first { $0.filename == "drm.epub" }!
         if case .unreadable = protected.status {} else { throw Failure(description: "DRM did not show unreadable state") }
         protected.manualISBN = "9780306406157"
@@ -173,27 +184,33 @@ struct RegressionTests {
             let second = try BookRenamer.rename(fileURL: disposable, metadata: metadata)
             try expect(first != second && second.lastPathComponent.contains("(2)"), "Rename collision preserves existing .\(ext) book")
         }
-        let vmRename = BookHelperViewModel(lookupService: StubLookups())
+        let vmRename = BookHelperViewModel(lookupService: StubLookups(), zoteroClient: client, preferences: preferences, activateZotero: {})
         let disposable = renamedDir.appendingPathComponent("workflow.epub")
         try source.write(to: disposable)
         vmRename.handleDroppedURLs([disposable]); try await waitUntilIdle(vmRename)
         vmRename.items[0].metadata?.title = "Reviewed Title"
         vmRename.updateSelectedTitles(); try await waitUntilIdle(vmRename)
-        try expect(vmRename.items[0].filename == "Reviewed Title.epub" && vmRename.items[0].status == .renamed && vmRename.zoteroReadyCount == 0, "Review → rename EPUB workflow")
+        try expect(vmRename.items[0].filename == "Reviewed Title.epub" && vmRename.items[0].status == .renamed && vmRename.zoteroReadyCount == 1, "Review → rename EPUB remains eligible for import")
         vmRename.clearCompleted()
-        try expect(vmRename.items.isEmpty, "Completed EPUB can be cleared without deleting book")
+        try expect(vmRename.items.count == 1 && !vmRename.items[0].isComplete, "Clear completed retains renamed EPUB awaiting import")
+        CaptureProtocol.reset()
+        vmRename.importSelectedToZotero(); try await waitUntilIdle(vmRename)
+        try expect(vmRename.items[0].status == .done && vmRename.zoteroReadyCount == 0, "Renamed EPUB imports and becomes complete")
+        vmRename.clearCompleted()
+        try expect(vmRename.items.isEmpty, "Imported EPUB can be cleared without deleting book")
         try expect(FileManager.default.fileExists(atPath: renamedDir.appendingPathComponent("Reviewed Title.epub").path), "Clearing completed retains EPUB")
 
-        let config = URLSessionConfiguration.ephemeral
-        config.protocolClasses = [CaptureProtocol.self]
-        let session = URLSession(configuration: config)
-        defer { session.invalidateAndCancel() }
-        let client = ZoteroClient(session: session)
         CaptureProtocol.reset()
-        do { try await client.importBook(metadata: normal.metadata!, pdfURL: fixture("metadata.epub")); throw Failure(description: "EPUB reached Zotero") }
+        do { try await client.importBook(metadata: normal.metadata!, fileURL: fixture("other.txt")); throw Failure(description: "Unsupported file reached Zotero") }
         catch ZoteroError.unsupportedFileType { }
-        try expect(CaptureProtocol.requests.isEmpty, "Zotero client rejects EPUB before even pinging")
-        try await client.importBook(metadata: normal.metadata!, pdfURL: pdf)
+        try expect(CaptureProtocol.requests.isEmpty, "Unsupported attachment rejected before pinging")
+        for name in ["drm.epub", "malformed-xml.epub", "traversal.epub", "declared-bomb.epub"] {
+            do { try await client.importBook(metadata: normal.metadata!, fileURL: fixture(name)); throw Failure(description: "Unsafe EPUB reached Zotero") }
+            catch is Failure { throw Failure(description: "Unsafe EPUB was not rejected: \(name)") }
+            catch { }
+            try expect(CaptureProtocol.requests.isEmpty, "Service revalidates \(name) before creating a Zotero item")
+        }
+        try await client.importBook(metadata: normal.metadata!, fileURL: pdf)
         let requests = CaptureProtocol.requests
         try expect(requests.map { $0.request.url!.path } == ["/connector/ping", "/connector/saveItems", "/connector/saveAttachment"], "PDF Zotero request sequence regression (intercepted locally)")
         let payload = try JSONSerialization.jsonObject(with: requests[1].body) as? [String: Any]
@@ -201,18 +218,35 @@ struct RegressionTests {
         try expect(book?["numPages"] as? String == "1" && book?["itemType"] as? String == "book", "PDF Zotero page count and item payload retained")
         try expect(requests[2].request.value(forHTTPHeaderField: "Content-Type") == "application/pdf" && requests[2].body == Data(contentsOf: pdf), "PDF Zotero attachment MIME and bytes retained")
 
+        for name in ["metadata.epub", "stored.EPUB", "title-only.epub"] {
+            CaptureProtocol.reset()
+            try await client.importBook(metadata: normal.metadata!, fileURL: fixture(name))
+            let epubRequests = CaptureProtocol.requests
+            try expect(epubRequests.map { $0.request.url!.path } == ["/connector/ping", "/connector/saveItems", "/connector/saveAttachment"], "EPUB connector sequence: \(name)")
+            let payload = try JSONSerialization.jsonObject(with: epubRequests[1].body) as! [String: Any]
+            let book = (payload["items"] as! [[String: Any]])[0]
+            let header = epubRequests[2].request.value(forHTTPHeaderField: "X-Metadata")!
+            let attachment = try JSONSerialization.jsonObject(with: Data(header.utf8)) as! [String: Any]
+            try expect(book["numPages"] == nil && book["itemType"] as? String == "book" && book["title"] as? String == normal.metadata!.fullTitle, "EPUB book metadata without invented page count: \(name)")
+            try expect(epubRequests[2].request.value(forHTTPHeaderField: "Content-Type") == "application/epub+zip" && epubRequests[2].body == Data(contentsOf: fixture(name)), "EPUB MIME and exact bytes: \(name)")
+            try expect(attachment["sessionID"] as? String == payload["sessionID"] as? String && attachment["parentItemID"] as? String == book["id"] as? String && attachment["url"] as? String == fixture(name).absoluteString, "EPUB attachment uses the newly created parent and session: \(name)")
+        }
+        CaptureProtocol.reset()
+        CaptureProtocol.saveItemsStatus = 500
+        do { try await client.importBook(metadata: normal.metadata!, fileURL: fixture("metadata.epub")); throw Failure(description: "Parent failure went unnoticed") }
+        catch ZoteroError.httpError(500) { }
+        CaptureProtocol.saveItemsStatus = 201
+        try expect(CaptureProtocol.requests.count == 2, "Failed parent creation prevents attachment upload")
+
         let unicodeURL = renamedDir.appendingPathComponent("Zoë’s 📚 book.pdf")
         try Data(contentsOf: pdf).write(to: unicodeURL)
         CaptureProtocol.reset()
-        try await client.importBook(metadata: normal.metadata!, pdfURL: unicodeURL)
+        try await client.importBook(metadata: normal.metadata!, fileURL: unicodeURL)
         let unicodeHeader = CaptureProtocol.requests.last!.request.value(forHTTPHeaderField: "X-Metadata")!
         let decodedHeader = try JSONSerialization.jsonObject(with: Data(unicodeHeader.utf8)) as! [String: Any]
         try expect(unicodeHeader.unicodeScalars.allSatisfy { $0.value < 128 }, "Unicode PDF attachment header is ASCII-safe")
         try expect(decodedHeader["title"] as? String == unicodeURL.lastPathComponent, "Unicode attachment header round-trips BMP and emoji")
 
-        let suite = "BookHelperRegression-" + UUID().uuidString
-        let preferences = UserDefaults(suiteName: suite)!
-        defer { preferences.removePersistentDomain(forName: suite) }
         var activations = 0
         let importModel = BookHelperViewModel(lookupService: StubLookups(), zoteroClient: client,
             preferences: preferences, activateZotero: { activations += 1 })
@@ -226,38 +260,63 @@ struct RegressionTests {
         }
         let firstImport = try readyPDF("download-1", title: "First Reviewed PDF")
         let secondImport = try readyPDF("download-2", title: "Second Reviewed PDF")
-        let excludedEPUB = BookFileItem(url: fixture("metadata.epub"))
-        excludedEPUB.metadata = normal.metadata
-        excludedEPUB.status = .ready
-        importModel.items = [firstImport, secondImport, excludedEPUB]
+        func readyEPUB(_ name: String, title: String) throws -> BookFileItem {
+            let url = renamedDir.appendingPathComponent(name + ".EPUB")
+            try source.write(to: url)
+            let item = BookFileItem(url: url)
+            item.metadata = BookMetadata(title: title)
+            item.status = .ready
+            return item
+        }
+        let includedEPUB = try readyEPUB("download-epub", title: "Reviewed EPUB")
+        importModel.items = [firstImport, secondImport, includedEPUB]
         CaptureProtocol.reset()
         importModel.importSelectedToZotero()
         importModel.importSelectedToZotero()
         try await waitUntilIdle(importModel)
-        try expect(CaptureProtocol.requests.count == 6, "PDF batch excludes EPUB and prevents duplicate in-flight imports")
+        try expect(CaptureProtocol.requests.count == 9, "Mixed PDF/EPUB batch prevents duplicate in-flight imports")
         try expect(firstImport.filename == "First Reviewed PDF.pdf" && secondImport.filename == "Second Reviewed PDF.pdf", "PDFs renamed before attachment upload")
-        try expect(activations == 1 && firstImport.status == .done && secondImport.status == .done, "Successful PDF batch switches to Zotero once")
-        try expect(excludedEPUB.status == .ready && importModel.zoteroImportNotice?.bookTitle == "Second Reviewed PDF", "EPUB unchanged and last PDF success notice retained")
+        try expect(activations == 1 && firstImport.status == .done && secondImport.status == .done, "Successful mixed batch switches to Zotero once")
+        try expect(includedEPUB.status == .done && includedEPUB.filename == "Reviewed EPUB.EPUB" && importModel.zoteroImportNotice?.bookTitle == "Reviewed EPUB", "Mixed batch renames EPUB and preserves last-book success notice")
+        let attachments = CaptureProtocol.requests.filter { $0.request.url?.path == "/connector/saveAttachment" }
+        try expect(attachments.map { $0.request.value(forHTTPHeaderField: "Content-Type")! } == ["application/pdf", "application/pdf", "application/epub+zip"], "Mixed batch retains correct MIME per attachment")
+        try expect(attachments.last!.body == source, "Mixed import preserves EPUB bytes")
+        importModel.clearCompleted()
+        try expect(importModel.items.isEmpty && FileManager.default.fileExists(atPath: includedEPUB.currentURL.path), "Clear completed removes imported mixed batch without deleting files")
 
         preferences.set(false, forKey: BookHelperPreferenceKey.switchToZotero)
         preferences.set(true, forKey: BookHelperPreferenceKey.removeImportedBooks)
         let removedImport = try readyPDF("download-3", title: "Kept on Disk")
-        importModel.items = [removedImport]
+        let removedEPUB = try readyEPUB("download-remove-epub", title: "EPUB Kept on Disk")
+        importModel.items = [removedImport, removedEPUB]
         importModel.importSelectedToZotero()
         try await waitUntilIdle(importModel)
         try expect(activations == 1 && importModel.items.isEmpty, "Switch-off and remove-imported preferences both respected")
-        try expect(FileManager.default.fileExists(atPath: removedImport.currentURL.path), "Remove-imported preference preserves PDF on disk")
+        try expect(FileManager.default.fileExists(atPath: removedImport.currentURL.path) && FileManager.default.fileExists(atPath: removedEPUB.currentURL.path), "Remove-imported preference preserves PDF and EPUB on disk")
 
         preferences.set(true, forKey: BookHelperPreferenceKey.switchToZotero)
         let failedImport = try readyPDF("download-4", title: "Failed Attachment")
         importModel.items = [failedImport]
-        CaptureProtocol.failAttachment = true
+        CaptureProtocol.attachmentStatus = 500
         importModel.importSelectedToZotero()
         try await waitUntilIdle(importModel)
-        CaptureProtocol.failAttachment = false
+        CaptureProtocol.attachmentStatus = 201
         try expect(activations == 1 && importModel.items.count == 1 && importModel.zoteroImportNotice == nil, "Failed PDF import stays in list and does not switch apps")
         if case .zoteroError = failedImport.status { checks += 1; print("PASS Failed attachment state retained") }
         else { throw Failure(description: "Expected Zotero error after attachment failure") }
+
+        let deniedEPUB = try readyEPUB("download-denied-epub", title: "Unwritable Attachment")
+        importModel.items = [deniedEPUB]
+        CaptureProtocol.attachmentStatus = 200
+        importModel.importSelectedToZotero(); try await waitUntilIdle(importModel)
+        CaptureProtocol.attachmentStatus = 201
+        try expect(activations == 1 && importModel.items.count == 1 && importModel.zoteroImportNotice == nil && !deniedEPUB.isComplete, "HTTP 200 without saved EPUB is not success and does not switch or remove")
+        if case .zoteroError(let message) = deniedEPUB.status {
+            try expect(message.contains("file could not be attached") && message.contains("allows file attachments"), "Unwritable EPUB attachment reports actionable partial import error")
+        } else { throw Failure(description: "Expected incomplete attachment error") }
+        importModel.clearCompleted()
+        try expect(importModel.items.count == 1 && deniedEPUB.canImportToZotero, "Failed EPUB remains visible and retryable")
+        try expect(Data(contentsOf: deniedEPUB.currentURL) == source, "Failed EPUB import leaves original contents intact")
 
         vm.items = [vm.items[0], vm.items.first { $0.currentURL == pdf }!, protected]
         vm.statusMessage = nil
@@ -285,7 +344,7 @@ struct RegressionTests {
         let epubBitmap = view.bitmapImageRepForCachingDisplay(in: view.bounds)!
         view.cacheDisplay(in: view.bounds, to: epubBitmap)
         try epubBitmap.representation(using: .png, properties: [:])!.write(to: output.appendingPathComponent("epub-only-ui.png"))
-        try expect(vm.zoteroReadyCount == 0, "EPUB-only UI at default window size")
+        try expect(vm.zoteroReadyCount == 1, "EPUB-only UI enables import at default window size")
         window.contentView = nil
     }
 }

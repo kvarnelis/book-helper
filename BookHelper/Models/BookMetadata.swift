@@ -6,6 +6,7 @@ enum BookFileFormat: String {
 
     init?(url: URL) { self.init(rawValue: url.pathExtension.lowercased()) }
     static let contentTypes: [UTType] = [.pdf, .epub]
+    var contentType: String { self == .pdf ? "application/pdf" : "application/epub+zip" }
 }
 
 struct BookMetadata: Identifiable, Codable, Equatable, Sendable {
@@ -137,8 +138,8 @@ final class BookFileItem: ObservableObject, Identifiable {
     }
 
     var format: BookFileFormat? { BookFileFormat(url: currentURL) }
-    var canImportToZotero: Bool { format == .pdf && status.canImportToZotero }
-    var isComplete: Bool { status == .done || (format == .epub && status == .renamed) }
+    var canImportToZotero: Bool { format != nil && status.canImportToZotero }
+    var isComplete: Bool { status == .done }
 
     var filename: String {
         currentURL.lastPathComponent
