@@ -2,6 +2,8 @@
 
 Book Helper is a native macOS app for identifying and renaming poorly named PDF and DRM-free EPUB books. PDFs can also be imported into Zotero.
 
+![Book Helper showing book metadata and PDF import controls](docs/images/book-helper.png)
+
 Drop in one or more PDFs or EPUBs and Book Helper will:
 
 - read embedded EPUB title, author, publisher, year and ISBN metadata;
