@@ -29,7 +29,7 @@ actor BookISBNExtractor {
         return isbns
     }
 
-    func extractISBNs(in text: String) -> [String] {
+    nonisolated func extractISBNs(in text: String) -> [String] {
         findISBNs(in: text)
     }
 
@@ -48,7 +48,7 @@ actor BookISBNExtractor {
         return lccns
     }
 
-    private func findISBNs(in text: String) -> [String] {
+    private nonisolated func findISBNs(in text: String) -> [String] {
         let separator = #"[\s\-\x{2010}\x{2011}\x{2012}\x{2013}\x{2014}\x{2015}\x{2212}]"#
         let patterns = [
             #"ISBN"# + separator + #"*13[:\s]*[0-9Oo](?:"# + separator + #"*[0-9Oo]){12}"#,
@@ -63,6 +63,7 @@ actor BookISBNExtractor {
                 let normalized = normalize(match)
                 if isValidISBN(normalized), !isbns.contains(normalized) {
                     isbns.append(normalized)
+                    if isbns.count == 64 { return isbns }
                 }
             }
         }
@@ -70,7 +71,9 @@ actor BookISBNExtractor {
         return isbns
     }
 
-    private func findLCCNs(in text: String) -> [String] {
+    nonisolated func extractLCCNs(in text: String) -> [String] { findLCCNs(in: text) }
+
+    private nonisolated func findLCCNs(in text: String) -> [String] {
         let patterns = [
             #"Library\s+of\s+Congress\s+(?:Control|Catalog(?:ing)?(?:-in-Publication)?)\s+(?:Number|No\.?)[:\s]*([0-9]{2,4}[\s-]?[0-9]{4,8})"#,
             #"\bLCCN[:\s]*([0-9]{2,4}[\s-]?[0-9]{4,8})"#
@@ -80,12 +83,13 @@ actor BookISBNExtractor {
         for pattern in patterns {
             guard let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive) else { continue }
             let range = NSRange(text.startIndex..., in: text)
-            for match in regex.matches(in: text, range: range) {
+            for match in boundedMatches(regex, in: text, range: range) {
                 guard match.numberOfRanges > 1,
                       let matchRange = Range(match.range(at: 1), in: text) else { continue }
                 let normalized = normalizeLCCN(String(text[matchRange]))
                 if !normalized.isEmpty, !lccns.contains(normalized) {
                     lccns.append(normalized)
+                    if lccns.count == 64 { return lccns }
                 }
             }
         }
@@ -93,19 +97,28 @@ actor BookISBNExtractor {
         return lccns
     }
 
-    private func matches(pattern: String, in text: String) -> [String] {
+    private nonisolated func matches(pattern: String, in text: String) -> [String] {
         guard let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive) else {
             return []
         }
 
         let range = NSRange(text.startIndex..., in: text)
-        return regex.matches(in: text, range: range).compactMap { match in
+        return boundedMatches(regex, in: text, range: range).compactMap { match in
             guard let matchRange = Range(match.range, in: text) else { return nil }
             return String(text[matchRange])
         }
     }
 
-    private func normalize(_ isbn: String) -> String {
+    private nonisolated func boundedMatches(_ regex: NSRegularExpression, in text: String, range: NSRange) -> [NSTextCheckingResult] {
+        var results: [NSTextCheckingResult] = []
+        regex.enumerateMatches(in: text, range: range) { match, _, stop in
+            if let match { results.append(match) }
+            if results.count == 256 { stop.pointee = true }
+        }
+        return results
+    }
+
+    private nonisolated func normalize(_ isbn: String) -> String {
         var cleaned = isbn
             .replacingOccurrences(of: #"ISBN[-\s]?1[03][:\s]*"#, with: "", options: .regularExpression)
             .replacingOccurrences(of: #"ISBN[:\s]*"#, with: "", options: .regularExpression)
@@ -120,7 +133,7 @@ actor BookISBNExtractor {
         return cleaned
     }
 
-    private func normalizeLCCN(_ lccn: String) -> String {
+    private nonisolated func normalizeLCCN(_ lccn: String) -> String {
         let cleaned = lccn
             .replacingOccurrences(of: #"[^0-9]"#, with: "", options: .regularExpression)
             .trimmingCharacters(in: .whitespacesAndNewlines)
@@ -132,13 +145,13 @@ actor BookISBNExtractor {
         return cleaned
     }
 
-    private func appendUnique(_ candidates: [String], to isbns: inout [String]) {
+    private nonisolated func appendUnique(_ candidates: [String], to isbns: inout [String]) {
         for candidate in candidates where !isbns.contains(candidate) {
             isbns.append(candidate)
         }
     }
 
-    private func isValidISBN(_ isbn: String) -> Bool {
+    private nonisolated func isValidISBN(_ isbn: String) -> Bool {
         switch isbn.count {
         case 10: return isValidISBN10(isbn)
         case 13: return isValidISBN13(isbn)
@@ -146,7 +159,7 @@ actor BookISBNExtractor {
         }
     }
 
-    private func isValidISBN10(_ isbn: String) -> Bool {
+    private nonisolated func isValidISBN10(_ isbn: String) -> Bool {
         let chars = Array(isbn)
         var sum = 0
 
@@ -165,7 +178,7 @@ actor BookISBNExtractor {
         return sum % 11 == 0
     }
 
-    private func isValidISBN13(_ isbn: String) -> Bool {
+    private nonisolated func isValidISBN13(_ isbn: String) -> Bool {
         let chars = Array(isbn)
         var sum = 0
 

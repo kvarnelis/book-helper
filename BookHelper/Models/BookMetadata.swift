@@ -1,4 +1,12 @@
 import Foundation
+import UniformTypeIdentifiers
+
+enum BookFileFormat: String {
+    case pdf, epub
+
+    init?(url: URL) { self.init(rawValue: url.pathExtension.lowercased()) }
+    static let contentTypes: [UTType] = [.pdf, .epub]
+}
 
 struct BookMetadata: Identifiable, Codable, Equatable, Sendable {
     let id: UUID
@@ -49,6 +57,7 @@ enum BookFileStatus: Equatable, Sendable {
     case done
     case zoteroError(String)
     case error(String)
+    case unreadable(String)
 
     var label: String {
         switch self {
@@ -57,11 +66,11 @@ enum BookFileStatus: Equatable, Sendable {
         case .lookingUp: return "Looking up"
         case .ready: return "Ready"
         case .updating: return "Updating"
-        case .renamed: return "Renamed — ready for Zotero"
+        case .renamed: return "Renamed"
         case .importingToZotero: return "Importing to Zotero"
         case .done: return "Done"
         case .zoteroError(let message): return "Zotero: \(message)"
-        case .error(let message): return "Error: \(message)"
+        case .error(let message), .unreadable(let message): return "Error: \(message)"
         }
     }
 
@@ -76,7 +85,7 @@ enum BookFileStatus: Equatable, Sendable {
         case .importingToZotero: return "books.vertical.fill"
         case .done: return "checkmark.circle.fill"
         case .zoteroError: return "exclamationmark.triangle"
-        case .error: return "exclamationmark.triangle"
+        case .error, .unreadable: return "exclamationmark.triangle"
         }
     }
 
@@ -89,7 +98,7 @@ enum BookFileStatus: Equatable, Sendable {
 
     var canRename: Bool {
         switch self {
-        case .ready, .zoteroError: return true
+        case .ready, .renamed, .zoteroError: return true
         default: return false
         }
     }
@@ -126,6 +135,10 @@ final class BookFileItem: ObservableObject, Identifiable {
             originalURL.stopAccessingSecurityScopedResource()
         }
     }
+
+    var format: BookFileFormat? { BookFileFormat(url: currentURL) }
+    var canImportToZotero: Bool { format == .pdf && status.canImportToZotero }
+    var isComplete: Bool { status == .done || (format == .epub && status == .renamed) }
 
     var filename: String {
         currentURL.lastPathComponent

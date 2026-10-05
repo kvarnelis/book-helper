@@ -21,10 +21,10 @@ struct BookDropZone: View {
                 Image(systemName: "doc.badge.plus")
                     .font(.system(size: 42))
                     .foregroundColor(.accentColor)
-                Text("Drop PDFs")
+                Text("Drop PDFs or EPUBs")
                     .font(.title3)
                     .fontWeight(.semibold)
-                Text("ISBNs are scanned from the document and matched against book metadata.")
+                Text("Identify and rename books. EPUBs must be DRM-free.")
                     .font(.callout)
                     .foregroundColor(.secondary)
             }
@@ -75,13 +75,13 @@ private final class BookDropNSView: NSView {
     }
 
     override func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
-        guard canReadPDFs(from: sender.draggingPasteboard) else { return [] }
+        guard canReadBooks(from: sender.draggingPasteboard) else { return [] }
         onTargetChange?(true)
         return .copy
     }
 
     override func draggingUpdated(_ sender: NSDraggingInfo) -> NSDragOperation {
-        canReadPDFs(from: sender.draggingPasteboard) ? .copy : []
+        canReadBooks(from: sender.draggingPasteboard) ? .copy : []
     }
 
     override func draggingExited(_ sender: NSDraggingInfo?) {
@@ -89,20 +89,20 @@ private final class BookDropNSView: NSView {
     }
 
     override func prepareForDragOperation(_ sender: NSDraggingInfo) -> Bool {
-        canReadPDFs(from: sender.draggingPasteboard)
+        canReadBooks(from: sender.draggingPasteboard)
     }
 
     override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
         onTargetChange?(false)
         let urls = fileURLs(from: sender.draggingPasteboard)
-        let pdfs = urls.filter { $0.pathExtension.lowercased() == "pdf" }
-        guard !pdfs.isEmpty else { return false }
-        onDrop?(pdfs)
+        let books = urls.filter { BookFileFormat(url: $0) != nil }
+        guard !books.isEmpty else { return false }
+        onDrop?(books)
         return true
     }
 
-    private func canReadPDFs(from pasteboard: NSPasteboard) -> Bool {
-        fileURLs(from: pasteboard).contains { $0.pathExtension.lowercased() == "pdf" }
+    private func canReadBooks(from pasteboard: NSPasteboard) -> Bool {
+        fileURLs(from: pasteboard).contains { BookFileFormat(url: $0) != nil }
     }
 
     private func fileURLs(from pasteboard: NSPasteboard) -> [URL] {

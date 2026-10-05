@@ -6,8 +6,14 @@ actor ZoteroClient {
 
     private let baseURL = URL(string: "http://127.0.0.1:23119")!
     private let connectorAPIVersion = "3"
+    private let session: URLSession
+
+    init(session: URLSession = .shared) { self.session = session }
 
     func importBook(metadata: BookMetadata, pdfURL: URL) async throws {
+        guard BookFileFormat(url: pdfURL) == .pdf else {
+            throw ZoteroError.unsupportedFileType
+        }
         try await ping()
 
         let sessionID = UUID().uuidString.lowercased()
@@ -90,7 +96,7 @@ actor ZoteroClient {
         request.setValue(contentType, forHTTPHeaderField: "Content-Type")
         request.setValue(connectorAPIVersion, forHTTPHeaderField: "X-Zotero-Connector-API-Version")
 
-        let (_, response) = try await URLSession.shared.upload(for: request, from: body)
+        let (_, response) = try await session.upload(for: request, from: body)
         try Self.validate(response)
     }
 
@@ -104,10 +110,9 @@ actor ZoteroClient {
         request.timeoutInterval = timeout
         request.setValue("application/pdf", forHTTPHeaderField: "Content-Type")
         request.setValue(connectorAPIVersion, forHTTPHeaderField: "X-Zotero-Connector-API-Version")
-        // Escape non-ASCII characters in the header value as \uXXXX to ensure HTTP compatibility
         request.setValue(Self.escapeNonASCII(metadataHeader), forHTTPHeaderField: "X-Metadata")
 
-        let (_, response) = try await URLSession.shared.upload(for: request, fromFile: pdfURL)
+        let (_, response) = try await session.upload(for: request, fromFile: pdfURL)
         try Self.validate(response)
     }
 
@@ -152,7 +157,6 @@ actor ZoteroClient {
             "lastName": parts.last ?? ""
         ]
     }
-
     /// Escapes all non-ASCII characters in a string as \uXXXX escape sequences.
     /// This ensures the string can be safely transmitted in HTTP headers, which require ASCII-only values.
     /// For characters above U+FFFF, uses UTF-16 surrogate pairs as per JSON spec.
@@ -179,6 +183,7 @@ actor ZoteroClient {
 }
 
 enum ZoteroError: LocalizedError {
+    case unsupportedFileType
     case notRunning
     case invalidResponse
     case invalidAttachmentMetadata
@@ -187,6 +192,8 @@ enum ZoteroError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
+        case .unsupportedFileType:
+            return "Zotero import currently supports PDF files only. EPUBs can be renamed."
         case .notRunning:
             return "Zotero is not running or its local connector is unavailable. Open Zotero and try again."
         case .invalidResponse:

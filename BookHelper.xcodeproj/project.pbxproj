@@ -3,235 +3,205 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 56;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0E1ED8239B039C6CF0D1F3B1 /* BookRenamer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01F52208E742BD4E4CC850F8 /* BookRenamer.swift */; };
-		2DB5516FB8E3D7543B4BF740 /* BookISBNExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBB300743CA8610793057942 /* BookISBNExtractor.swift */; };
-		498B16B9FF5F3822A2AD1C8F /* BookMetadataLookupService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 319F50D5E4E09232FDA461D2 /* BookMetadataLookupService.swift */; };
-		6AD174922775FEA220EE69EC /* BookMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0230997A2010CE3CB76FF35 /* BookMetadata.swift */; };
-		80B6471D3C5729744B6C98EA /* BookHelperApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFABDFE9265C2DA55FAFCCD9 /* BookHelperApp.swift */; };
-		8CB9C80A7ED5D0C15CF306D4 /* ZoteroClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7A80B3B7FC2FA0EEABF08A2 /* ZoteroClient.swift */; };
-		8FC2D0D7F41A7634E863145E /* BookDropZone.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBE7B77E13FEC34E0413FD89 /* BookDropZone.swift */; };
-		DA812AD1B6401915DB820D05 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A506D815E2D07FE332159F04 /* Assets.xcassets */; };
-		DBD6B08BD2AD4DE5C7B91A1C /* BookHelperViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5827A6561A5ADBFD12D9C29 /* BookHelperViewModel.swift */; };
-		DCB9228F889B74206E9B6D50 /* BookHelperContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E932C0811EA87A88DEEA2F05 /* BookHelperContentView.swift */; };
-		E6B9FE1513DD0E1782DA33F9 /* BookHelperSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8DC49EF19417D232812D188 /* BookHelperSettingsView.swift */; };
+		B2000001000000000000001 /* BookHelperApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000002000000000000001 /* BookHelperApp.swift */; };
+		B2000001000000000000002 /* BookMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000002000000000000002 /* BookMetadata.swift */; };
+		B2000001000000000000003 /* BookISBNExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000002000000000000003 /* BookISBNExtractor.swift */; };
+		B2000001000000000000004 /* BookMetadataLookupService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000002000000000000004 /* BookMetadataLookupService.swift */; };
+		B2000001000000000000005 /* BookRenamer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000002000000000000005 /* BookRenamer.swift */; };
+		B2000001000000000000006 /* BookHelperViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000002000000000000006 /* BookHelperViewModel.swift */; };
+		B2000001000000000000007 /* BookDropZone.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000002000000000000007 /* BookDropZone.swift */; };
+		B2000001000000000000008 /* BookHelperContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000002000000000000008 /* BookHelperContentView.swift */; };
+		B2000001000000000000009 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1000002000000000000012 /* Assets.xcassets */; };
+		B2000001000000000000010 /* ZoteroClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000002000000000000010 /* ZoteroClient.swift */; };
+		B2000001000000000000011 /* BookHelperSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000002000000000000011 /* BookHelperSettingsView.swift */; };
+		B2000001000000000000012 /* BoundedZIPArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000002000000000000012 /* BoundedZIPArchive.swift */; };
+		B2000001000000000000013 /* EPUBExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000002000000000000013 /* EPUBExtractor.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		01F52208E742BD4E4CC850F8 /* BookRenamer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookRenamer.swift; sourceTree = "<group>"; };
-		319F50D5E4E09232FDA461D2 /* BookMetadataLookupService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookMetadataLookupService.swift; sourceTree = "<group>"; };
-		5005F55D325E2D570CC7C7CF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		A506D815E2D07FE332159F04 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		A7A80B3B7FC2FA0EEABF08A2 /* ZoteroClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoteroClient.swift; sourceTree = "<group>"; };
-		C0230997A2010CE3CB76FF35 /* BookMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookMetadata.swift; sourceTree = "<group>"; };
-		CBB300743CA8610793057942 /* BookISBNExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookISBNExtractor.swift; sourceTree = "<group>"; };
-		CBD265F21C8489ACBB1971FA /* Book Helper.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Book Helper.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		E5827A6561A5ADBFD12D9C29 /* BookHelperViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookHelperViewModel.swift; sourceTree = "<group>"; };
-		E932C0811EA87A88DEEA2F05 /* BookHelperContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookHelperContentView.swift; sourceTree = "<group>"; };
-		EBE7B77E13FEC34E0413FD89 /* BookDropZone.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookDropZone.swift; sourceTree = "<group>"; };
-		EFABDFE9265C2DA55FAFCCD9 /* BookHelperApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookHelperApp.swift; sourceTree = "<group>"; };
-		F8DC49EF19417D232812D188 /* BookHelperSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookHelperSettingsView.swift; sourceTree = "<group>"; };
+		A1000002000000000000012 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B2000002000000000000001 /* BookHelperApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookHelperApp.swift; sourceTree = "<group>"; };
+		B2000002000000000000002 /* BookMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookMetadata.swift; sourceTree = "<group>"; };
+		B2000002000000000000003 /* BookISBNExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookISBNExtractor.swift; sourceTree = "<group>"; };
+		B2000002000000000000004 /* BookMetadataLookupService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookMetadataLookupService.swift; sourceTree = "<group>"; };
+		B2000002000000000000005 /* BookRenamer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookRenamer.swift; sourceTree = "<group>"; };
+		B2000002000000000000006 /* BookHelperViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookHelperViewModel.swift; sourceTree = "<group>"; };
+		B2000002000000000000007 /* BookDropZone.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookDropZone.swift; sourceTree = "<group>"; };
+		B2000002000000000000008 /* BookHelperContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookHelperContentView.swift; sourceTree = "<group>"; };
+		B2000002000000000000009 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B2000002000000000000010 /* ZoteroClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoteroClient.swift; sourceTree = "<group>"; };
+		B2000002000000000000011 /* BookHelperSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookHelperSettingsView.swift; sourceTree = "<group>"; };
+		B2000003000000000000001 /* Book Helper.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Book Helper.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B2000002000000000000012 /* BoundedZIPArchive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoundedZIPArchive.swift; sourceTree = "<group>"; };
+		B2000002000000000000013 /* EPUBExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EPUBExtractor.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFrameworksBuildPhase section */
+		B2000004000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
 /* Begin PBXGroup section */
-		056D22BC88DFD8C2426ED3E0 /* Views */ = {
+		A1000005000000000000001 = {
 			isa = PBXGroup;
 			children = (
-				EBE7B77E13FEC34E0413FD89 /* BookDropZone.swift */,
-				E932C0811EA87A88DEEA2F05 /* BookHelperContentView.swift */,
-				F8DC49EF19417D232812D188 /* BookHelperSettingsView.swift */,
-				E5827A6561A5ADBFD12D9C29 /* BookHelperViewModel.swift */,
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
-		5C16E043A7E22A18FA93E6F2 /* BookHelper */ = {
-			isa = PBXGroup;
-			children = (
-				A506D815E2D07FE332159F04 /* Assets.xcassets */,
-				EFABDFE9265C2DA55FAFCCD9 /* BookHelperApp.swift */,
-				5005F55D325E2D570CC7C7CF /* Info.plist */,
-				F73592B74B319F9F68D4FEC3 /* Models */,
-				661AA8FEEE21A656348E1BD2 /* Services */,
-				056D22BC88DFD8C2426ED3E0 /* Views */,
-			);
-			name = BookHelper;
-			path = Sources/BookHelper;
-			sourceTree = "<group>";
-		};
-		64324638A0E17A7990A59EDF = {
-			isa = PBXGroup;
-			children = (
-				5C16E043A7E22A18FA93E6F2 /* BookHelper */,
-				A9B33D5E667E019F02984E5E /* Products */,
+				B2000005000000000000002 /* BookHelper */,
+				A1000005000000000000006 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		661AA8FEEE21A656348E1BD2 /* Services */ = {
+		A1000005000000000000006 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				CBB300743CA8610793057942 /* BookISBNExtractor.swift */,
-				319F50D5E4E09232FDA461D2 /* BookMetadataLookupService.swift */,
-				01F52208E742BD4E4CC850F8 /* BookRenamer.swift */,
-				A7A80B3B7FC2FA0EEABF08A2 /* ZoteroClient.swift */,
-			);
-			path = Services;
-			sourceTree = "<group>";
-		};
-		A9B33D5E667E019F02984E5E /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				CBD265F21C8489ACBB1971FA /* Book Helper.app */,
+				B2000003000000000000001 /* Book Helper.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		F73592B74B319F9F68D4FEC3 /* Models */ = {
+		B2000005000000000000002 /* BookHelper */ = {
 			isa = PBXGroup;
 			children = (
-				C0230997A2010CE3CB76FF35 /* BookMetadata.swift */,
+				B2000002000000000000001 /* BookHelperApp.swift */,
+				A1000002000000000000012 /* Assets.xcassets */,
+				B2000002000000000000009 /* Info.plist */,
+				B2000005000000000000003 /* Models */,
+				B2000005000000000000004 /* Services */,
+				B2000005000000000000005 /* Views */,
+			);
+			path = BookHelper;
+			sourceTree = "<group>";
+		};
+		B2000005000000000000003 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				B2000002000000000000002 /* BookMetadata.swift */,
 			);
 			path = Models;
+			sourceTree = "<group>";
+		};
+		B2000005000000000000004 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				B2000002000000000000012 /* BoundedZIPArchive.swift */,
+				B2000002000000000000013 /* EPUBExtractor.swift */,
+				B2000002000000000000003 /* BookISBNExtractor.swift */,
+				B2000002000000000000004 /* BookMetadataLookupService.swift */,
+				B2000002000000000000005 /* BookRenamer.swift */,
+				B2000002000000000000010 /* ZoteroClient.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		B2000005000000000000005 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				B2000002000000000000006 /* BookHelperViewModel.swift */,
+				B2000002000000000000007 /* BookDropZone.swift */,
+				B2000002000000000000008 /* BookHelperContentView.swift */,
+				B2000002000000000000011 /* BookHelperSettingsView.swift */,
+			);
+			path = Views;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		59D4540A407F355FD5EAFC7B /* BookHelper */ = {
+		B2000006000000000000001 /* BookHelper */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 65CB379010B739643ACED9E0 /* Build configuration list for PBXNativeTarget "BookHelper" */;
+			buildConfigurationList = B2000008000000000000001 /* Build configuration list for PBXNativeTarget "BookHelper" */;
 			buildPhases = (
-				96C1A7C5D262A9226E9A687E /* Sources */,
-				C0F55F162EB3276EA71BFBB2 /* Resources */,
+				B2000007000000000000001 /* Sources */,
+				B2000004000000000000001 /* Frameworks */,
+				B200000D000000000000001 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			name = BookHelper;
-			packageProductDependencies = (
-			);
-			productName = BookHelper;
-			productReference = CBD265F21C8489ACBB1971FA /* Book Helper.app */;
+			productName = "Book Helper";
+			productReference = B2000003000000000000001 /* Book Helper.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		CE55A77532349CA1FBBE0AFC /* Project object */ = {
+		A1000009000000000000001 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 1430;
-				TargetAttributes = {
-					59D4540A407F355FD5EAFC7B = {
-						ProvisioningStyle = Automatic;
-					};
-				};
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
 			};
-			buildConfigurationList = A083C388BBFBE79A2D485633 /* Build configuration list for PBXProject "BookHelper" */;
+			buildConfigurationList = A100000A000000000000001 /* Build configuration list for PBXProject "BookHelper" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
-				Base,
 				en,
+				Base,
 			);
-			mainGroup = 64324638A0E17A7990A59EDF;
-			minimizedProjectReferenceProxies = 1;
-			preferredProjectObjectVersion = 77;
+			mainGroup = A1000005000000000000001;
+			productRefGroup = A1000005000000000000006 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				59D4540A407F355FD5EAFC7B /* BookHelper */,
+				B2000006000000000000001 /* BookHelper */,
 			);
 		};
 /* End PBXProject section */
 
-/* Begin PBXResourcesBuildPhase section */
-		C0F55F162EB3276EA71BFBB2 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				DA812AD1B6401915DB820D05 /* Assets.xcassets in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXResourcesBuildPhase section */
-
 /* Begin PBXSourcesBuildPhase section */
-		96C1A7C5D262A9226E9A687E /* Sources */ = {
+		B2000007000000000000001 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8FC2D0D7F41A7634E863145E /* BookDropZone.swift in Sources */,
-				80B6471D3C5729744B6C98EA /* BookHelperApp.swift in Sources */,
-				DCB9228F889B74206E9B6D50 /* BookHelperContentView.swift in Sources */,
-				E6B9FE1513DD0E1782DA33F9 /* BookHelperSettingsView.swift in Sources */,
-				DBD6B08BD2AD4DE5C7B91A1C /* BookHelperViewModel.swift in Sources */,
-				2DB5516FB8E3D7543B4BF740 /* BookISBNExtractor.swift in Sources */,
-				6AD174922775FEA220EE69EC /* BookMetadata.swift in Sources */,
-				498B16B9FF5F3822A2AD1C8F /* BookMetadataLookupService.swift in Sources */,
-				0E1ED8239B039C6CF0D1F3B1 /* BookRenamer.swift in Sources */,
-				8CB9C80A7ED5D0C15CF306D4 /* ZoteroClient.swift in Sources */,
+				B2000001000000000000001 /* BookHelperApp.swift in Sources */,
+				B2000001000000000000002 /* BookMetadata.swift in Sources */,
+				B2000001000000000000012 /* BoundedZIPArchive.swift in Sources */,
+				B2000001000000000000013 /* EPUBExtractor.swift in Sources */,
+				B2000001000000000000003 /* BookISBNExtractor.swift in Sources */,
+				B2000001000000000000004 /* BookMetadataLookupService.swift in Sources */,
+				B2000001000000000000005 /* BookRenamer.swift in Sources */,
+				B2000001000000000000006 /* BookHelperViewModel.swift in Sources */,
+				B2000001000000000000007 /* BookDropZone.swift in Sources */,
+				B2000001000000000000008 /* BookHelperContentView.swift in Sources */,
+				B2000001000000000000010 /* ZoteroClient.swift in Sources */,
+				B2000001000000000000011 /* BookHelperSettingsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXResourcesBuildPhase section */
+		B200000D000000000000001 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B2000001000000000000009 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin XCBuildConfiguration section */
-		00A8C5322DD421A150286D46 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 20260811.2;
-				EXECUTABLE_NAME = "Book Helper";
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = Sources/BookHelper/Info.plist;
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 1.1;
-				PRODUCT_BUNDLE_IDENTIFIER = com.papershelper.bookhelper;
-				PRODUCT_NAME = "Book Helper";
-				SDKROOT = macosx;
-			};
-			name = Release;
-		};
-		198E97C4288A4130682ED8DC /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 20260811.2;
-				EXECUTABLE_NAME = "Book Helper";
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = Sources/BookHelper/Info.plist;
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 1.1;
-				PRODUCT_BUNDLE_IDENTIFIER = com.papershelper.bookhelper;
-				PRODUCT_NAME = "Book Helper";
-				SDKROOT = macosx;
-			};
-			name = Debug;
-		};
-		3EA7224110C29E4E057DB03B /* Release */ = {
+		A100000B000000000000001 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
-				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
@@ -257,79 +227,18 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_STYLE = Automatic;
-				COPY_PHASE_STRIP = NO;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				ENABLE_HARDENED_RUNTIME = YES;
-				ENABLE_NS_ASSERTIONS = NO;
-				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu11;
-				GCC_NO_COMMON_BLOCKS = YES;
-				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
-				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
-				GCC_WARN_UNDECLARED_SELECTOR = YES;
-				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
-				GCC_WARN_UNUSED_FUNCTION = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MTL_ENABLE_DEBUG_INFO = NO;
-				MTL_FAST_MATH = YES;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = macosx;
-				SWIFT_COMPILATION_MODE = wholemodule;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_OPTIMIZATION_LEVEL = "-O";
-				SWIFT_VERSION = 5.0;
-			};
-			name = Release;
-		};
-		E3707A88A06EC826C50C07BA /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
-				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
-				CLANG_CXX_LIBRARY = "libc++";
-				CLANG_ENABLE_MODULES = YES;
-				CLANG_ENABLE_OBJC_ARC = YES;
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
-				CLANG_WARN_BOOL_CONVERSION = YES;
-				CLANG_WARN_COMMA = YES;
-				CLANG_WARN_CONSTANT_CONVERSION = YES;
-				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
-				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_EMPTY_BODY = YES;
-				CLANG_WARN_ENUM_CONVERSION = YES;
-				CLANG_WARN_INFINITE_RECURSION = YES;
-				CLANG_WARN_INT_CONVERSION = YES;
-				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
-				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
-				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
-				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
-				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
-				CLANG_WARN_STRICT_PROTOTYPES = YES;
-				CLANG_WARN_SUSPICIOUS_MOVE = YES;
-				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CLANG_WARN_UNREACHABLE_CODE = YES;
-				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu11;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
-					"$(inherited)",
 					"DEBUG=1",
+					"$(inherited)",
 				);
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
@@ -337,41 +246,147 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
-				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		A100000B000000000000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		B200000C000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 20261005.1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BookHelper/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.papershelper.bookhelper;
+				PRODUCT_NAME = "Book Helper";
+				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
+		B200000C000000000000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 20261005.1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BookHelper/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.papershelper.bookhelper;
+				PRODUCT_NAME = "Book Helper";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		65CB379010B739643ACED9E0 /* Build configuration list for PBXNativeTarget "BookHelper" */ = {
+		B2000008000000000000001 /* Build configuration list for PBXNativeTarget "BookHelper" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				198E97C4288A4130682ED8DC /* Debug */,
-				00A8C5322DD421A150286D46 /* Release */,
+				B200000C000000000000001 /* Debug */,
+				B200000C000000000000002 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
+			defaultConfigurationName = Release;
 		};
-		A083C388BBFBE79A2D485633 /* Build configuration list for PBXProject "BookHelper" */ = {
+		A100000A000000000000001 /* Build configuration list for PBXProject "BookHelper" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				E3707A88A06EC826C50C07BA /* Debug */,
-				3EA7224110C29E4E057DB03B /* Release */,
+				A100000B000000000000001 /* Debug */,
+				A100000B000000000000002 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
 	};
-	rootObject = CE55A77532349CA1FBBE0AFC /* Project object */;
+	rootObject = A1000009000000000000001 /* Project object */;
 }

@@ -1,3 +1,23 @@
-build/DerivedData/
-xcuserdata/
+__pycache__/
+*.pyc
+*.pyo
 .DS_Store
+*.xcuserstate
+xcuserdata/
+.claude/
+My_Library.csv
+build/DerivedData/
+
+# Books and personal library exports are never release source.
+*.pdf
+*.epub
+*.EPUB
+*.PDF
+*.mobi
+*.azw
+*.azw3
+*.kfx
+*.csv
+*.tsv
+*.bib
+*.ris

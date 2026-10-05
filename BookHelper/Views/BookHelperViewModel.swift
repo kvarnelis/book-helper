@@ -1,14 +1,43 @@
+import AppKit
 import Combine
 import Foundation
-import AppKit
+
+struct ZoteroImportNotice: Equatable {
+    let bookTitle: String
+}
 
 @MainActor
 final class BookHelperViewModel: ObservableObject {
     @Published var items: [BookFileItem] = []
     @Published var statusMessage: String?
+    @Published var zoteroImportNotice: ZoteroImportNotice?
     @Published var refreshCounter = 0
 
     private let isbnExtractor = BookISBNExtractor()
+    private let epubExtractor = EPUBExtractor()
+    private let lookupService: any BookMetadataLookingUp
+
+    private let zoteroClient: ZoteroClient
+    private let preferences: UserDefaults
+    private let activateZotero: (() -> Void)?
+
+    init(lookupService: any BookMetadataLookingUp = BookMetadataLookupService.shared,
+         zoteroClient: ZoteroClient = .shared,
+         preferences: UserDefaults = .standard,
+         activateZotero: (() -> Void)? = nil) {
+        self.lookupService = lookupService
+        self.zoteroClient = zoteroClient
+        self.preferences = preferences
+        self.activateZotero = activateZotero
+    }
+
+    var defaultStatusMessage: String {
+        if items.isEmpty { return "Add PDFs or DRM-free EPUBs." }
+        if items.contains(where: { $0.format == .epub }) {
+            return "EPUBs: rename only · \(zoteroReadyCount) PDF\(zoteroReadyCount == 1 ? "" : "s") ready for Zotero"
+        }
+        return "\(zoteroReadyCount) ready for Zotero"
+    }
     private var itemObservers: [UUID: AnyCancellable] = [:]
 
     var renameReadyCount: Int {
@@ -16,7 +45,7 @@ final class BookHelperViewModel: ObservableObject {
     }
 
     var zoteroReadyCount: Int {
-        items.filter { $0.isSelected && $0.status.canImportToZotero }.count
+        items.filter { $0.isSelected && $0.canImportToZotero }.count
     }
 
     var hasItems: Bool {
@@ -24,15 +53,15 @@ final class BookHelperViewModel: ObservableObject {
     }
 
     func handleDroppedURLs(_ urls: [URL]) {
-        let pdfs = urls.filter { $0.pathExtension.lowercased() == "pdf" }
-        guard !pdfs.isEmpty else {
-            statusMessage = "Drop PDF files."
+        let books = urls.filter { BookFileFormat(url: $0) != nil }
+        guard !books.isEmpty else {
+            statusMessage = "Add PDF or EPUB files."
             return
         }
 
         statusMessage = nil
         var existingPaths = Set(items.map { $0.currentURL.standardizedFileURL.path })
-        for url in pdfs {
+        for url in books {
             guard !existingPaths.contains(url.standardizedFileURL.path) else { continue }
             existingPaths.insert(url.standardizedFileURL.path)
             let item = BookFileItem(url: url)
@@ -46,6 +75,7 @@ final class BookHelperViewModel: ObservableObject {
     }
 
     func lookupManualISBN(for item: BookFileItem) {
+        if case .unreadable = item.status { return }
         let isbn = item.manualISBN.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !isbn.isEmpty else { return }
 
@@ -64,93 +94,42 @@ final class BookHelperViewModel: ObservableObject {
     }
 
     func importSelectedToZotero() {
-        let selected = items.filter { $0.isSelected && $0.status.canImportToZotero && $0.metadata != nil }
+        let selected = items.filter { $0.isSelected && $0.canImportToZotero && $0.metadata != nil }
         guard !selected.isEmpty else { return }
 
+        zoteroImportNotice = nil
         statusMessage = "Importing \(selected.count) book\(selected.count == 1 ? "" : "s") to Zotero…"
-        for item in selected {
-            item.status = .importingToZotero
-        }
-
+        selected.forEach { $0.status = .importingToZotero }
         Task {
-            await importSelectedBatch(selected)
-        }
-    }
-
-    private func importSelectedBatch(_ items: [BookFileItem]) async {
-        var successCount = 0
-        var failureCount = 0
-
-        await withTaskGroup(of: Bool.self) { group in
-            for item in items {
-                group.addTask {
-                    await self.importToZotero(item)
+            var allSucceeded = true
+            for item in selected {
+                guard items.contains(where: { $0.id == item.id }) else {
+                    allSucceeded = false
+                    continue
                 }
+                if !(await importToZotero(item)) { allSucceeded = false }
             }
-
-            for await success in group {
-                if success {
-                    successCount += 1
-                } else {
-                    failureCount += 1
-                }
+            if allSucceeded && (preferences.object(forKey: BookHelperPreferenceKey.switchToZotero) as? Bool ?? true) {
+                if let activateZotero { activateZotero() }
+                else { showLastImportedBookInZotero() }
             }
         }
-
-        // Switch to Zotero only if all imports succeeded
-        if failureCount == 0 && successCount > 0 {
-            switchToZoteroIfPreferred()
-        }
     }
 
-    private func importToZotero(_ item: BookFileItem) async -> Bool {
-        guard let metadata = item.metadata else {
-            item.status = .error("No metadata")
-            return false
-        }
-
-        // Rename the PDF first to avoid importing with raw download filename
-        let currentURL = item.currentURL
-        do {
-            let newURL = try await Task.detached(priority: .userInitiated) {
-                try BookRenamer.rename(pdfURL: currentURL, metadata: metadata)
-            }.value
-            item.currentURL = newURL
-        } catch {
-            item.status = .error(error.localizedDescription)
-            statusMessage = error.localizedDescription
-            return false
-        }
-
-        // Upload to Zotero with the renamed PDF
-        do {
-            try await ZoteroClient.shared.importBook(metadata: metadata, pdfURL: item.currentURL)
-            item.status = .done
-            statusMessage = "Imported \(metadata.fullTitle) to Zotero"
-            return true
-        } catch {
-            item.status = .zoteroError(error.localizedDescription)
-            statusMessage = error.localizedDescription
-            return false
-        }
-    }
-
-    private func switchToZoteroIfPreferred() {
-        guard UserDefaults.standard.object(forKey: "switchToZoteroAfterImporting") as? Bool ?? true else { return }
-
-        let zoteroBundle = "org.zotero.zotero"
-        guard let zoteroURL = NSWorkspace.shared.urlForApplication(withBundleIdentifier: zoteroBundle) else {
+    func showLastImportedBookInZotero() {
+        guard let zoteroURL = NSWorkspace.shared.urlForApplication(withBundleIdentifier: "org.zotero.zotero") else {
+            zoteroImportNotice = nil
+            statusMessage = "Zotero is not installed."
             return
         }
 
         let configuration = NSWorkspace.OpenConfiguration()
         configuration.activates = true
-
-        Task {
-            do {
-                try await NSWorkspace.shared.openApplication(at: zoteroURL, configuration: configuration)
-            } catch {
-                // Silently fail - Zotero is running (import succeeded), but activation failed
+        NSWorkspace.shared.openApplication(at: zoteroURL, configuration: configuration) { [weak self] _, error in
+            guard let error else { return }
+            Task { @MainActor in
+                self?.zoteroImportNotice = nil
+                self?.statusMessage = "Could not open Zotero: \(error.localizedDescription)"
             }
         }
     }
@@ -162,7 +141,7 @@ final class BookHelperViewModel: ObservableObject {
     }
 
     func clearCompleted() {
-        let completed = items.filter { $0.status == .done }
+        let completed = items.filter { $0.isComplete }
         let completedIDs = Set(completed.map(\.id))
         guard !completedIDs.isEmpty else { return }
 
@@ -176,6 +155,7 @@ final class BookHelperViewModel: ObservableObject {
         items = []
         itemObservers = [:]
         statusMessage = nil
+        zoteroImportNotice = nil
     }
 
     private func observe(_ item: BookFileItem) {
@@ -189,7 +169,12 @@ final class BookHelperViewModel: ObservableObject {
     private func process(_ item: BookFileItem) async {
         item.status = .scanning
 
-        let filenameISBNs = await isbnExtractor.extractISBNs(in: item.currentURL.deletingPathExtension().lastPathComponent)
+        if item.format == .epub {
+            await processEPUB(item)
+            return
+        }
+
+        let filenameISBNs = isbnExtractor.extractISBNs(in: item.currentURL.deletingPathExtension().lastPathComponent)
         let documentISBNs = await isbnExtractor.extractISBNs(from: item.currentURL)
         let lccnCandidates = await isbnExtractor.extractLCCNs(from: item.currentURL)
         let isbnCandidates = orderedUnique(filenameISBNs + documentISBNs)
@@ -205,11 +190,30 @@ final class BookHelperViewModel: ObservableObject {
         await lookupFromFilename(for: item)
     }
 
+    private func processEPUB(_ item: BookFileItem) async {
+        do {
+            let extracted = try await epubExtractor.extract(from: item.currentURL)
+            if let metadata = extracted.metadata {
+                item.metadata = metadata
+                item.isbn = metadata.isbn
+                item.status = .ready
+                return
+            }
+            let filenameISBNs = isbnExtractor.extractISBNs(in: item.currentURL.deletingPathExtension().lastPathComponent)
+            let candidates = Array(orderedUnique(extracted.isbnCandidates + filenameISBNs).prefix(5))
+            if await lookupISBNCandidates(candidates, for: item) { return }
+            if await lookupLCCNCandidates(Array(extracted.lccnCandidates.prefix(5)), for: item) { return }
+            await lookupFromFilename(for: item)
+        } catch {
+            item.status = .unreadable(error.localizedDescription)
+        }
+    }
+
     private func lookupFromFilename(for item: BookFileItem) async {
         item.status = .lookingUp
         let guess = filenameGuess(from: item.currentURL)
 
-        if let metadata = await BookMetadataLookupService.shared.searchBestMatch(title: guess.title, author: guess.author) {
+        if let metadata = await lookupService.searchBestMatch(title: guess.title, author: guess.author) {
             item.metadata = metadata
             item.isbn = metadata.isbn
             item.status = .ready
@@ -224,7 +228,7 @@ final class BookHelperViewModel: ObservableObject {
         item.status = .lookingUp
         item.isbn = isbn
 
-        if let metadata = await BookMetadataLookupService.shared.lookupISBN(isbn) {
+        if let metadata = await lookupService.lookupISBN(isbn) {
             item.metadata = metadata
             item.status = .ready
         } else {
@@ -237,7 +241,7 @@ final class BookHelperViewModel: ObservableObject {
 
         for isbn in isbns {
             item.isbn = isbn
-            if let metadata = await BookMetadataLookupService.shared.lookupISBN(isbn) {
+            if let metadata = await lookupService.lookupISBN(isbn) {
                 item.metadata = metadata
                 item.isbn = metadata.isbn ?? isbn
                 item.status = .ready
@@ -252,7 +256,7 @@ final class BookHelperViewModel: ObservableObject {
         item.status = .lookingUp
 
         for lccn in lccns {
-            if let metadata = await BookMetadataLookupService.shared.lookupLCCN(lccn) {
+            if let metadata = await lookupService.lookupLCCN(lccn) {
                 item.metadata = metadata
                 item.isbn = metadata.isbn
                 item.status = .ready
@@ -276,7 +280,7 @@ final class BookHelperViewModel: ObservableObject {
 
         Task.detached(priority: .userInitiated) { [itemID, currentURL, metadata, viewModel = self] in
             do {
-                let newURL = try BookRenamer.rename(pdfURL: currentURL, metadata: metadata)
+                let newURL = try BookRenamer.rename(fileURL: currentURL, metadata: metadata)
                 await viewModel.finishRename(itemID: itemID, newURL: newURL)
             } catch {
                 await viewModel.failRename(itemID: itemID, message: error.localizedDescription)
@@ -284,11 +288,51 @@ final class BookHelperViewModel: ObservableObject {
         }
     }
 
+    private func importToZotero(_ item: BookFileItem) async -> Bool {
+        zoteroImportNotice = nil
+
+        guard let metadata = item.metadata else {
+            item.status = .error("No metadata")
+            statusMessage = "No metadata"
+            return false
+        }
+
+        let currentURL = item.currentURL
+        do {
+            item.currentURL = try await Task.detached(priority: .userInitiated) {
+                try BookRenamer.rename(fileURL: currentURL, metadata: metadata)
+            }.value
+        } catch {
+            item.status = .error(error.localizedDescription)
+            statusMessage = error.localizedDescription
+            return false
+        }
+
+        do {
+            try await zoteroClient.importBook(metadata: metadata, pdfURL: item.currentURL)
+            item.status = .done
+            zoteroImportNotice = ZoteroImportNotice(bookTitle: metadata.fullTitle)
+            statusMessage = nil
+
+            if preferences.bool(forKey: BookHelperPreferenceKey.removeImportedBooks) {
+                remove(item)
+            }
+            return true
+        } catch {
+            item.status = .zoteroError(error.localizedDescription)
+            zoteroImportNotice = nil
+            statusMessage = error.localizedDescription
+            return false
+        }
+    }
+
     private func finishRename(itemID: UUID, newURL: URL) {
         guard let item = items.first(where: { $0.id == itemID }) else { return }
         item.currentURL = newURL
         item.status = .renamed
-        statusMessage = "Renamed \(newURL.lastPathComponent); ready to import to Zotero"
+        statusMessage = item.format == .epub
+            ? "Renamed \(newURL.lastPathComponent)"
+            : "Renamed \(newURL.lastPathComponent); ready to import to Zotero"
     }
 
     private func failRename(itemID: UUID, message: String) {

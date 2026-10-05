@@ -1,6 +1,12 @@
 import Foundation
 
-actor BookMetadataLookupService {
+protocol BookMetadataLookingUp {
+    func lookupISBN(_ isbn: String) async -> BookMetadata?
+    func lookupLCCN(_ lccn: String) async -> BookMetadata?
+    func searchBestMatch(title: String, author: String?) async -> BookMetadata?
+}
+
+actor BookMetadataLookupService: BookMetadataLookingUp {
     static let shared = BookMetadataLookupService()
 
     private init() {}

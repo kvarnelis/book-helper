@@ -28,7 +28,7 @@ struct BookHelperContentView: View {
         .navigationTitle("Book Helper")
         .fileImporter(
             isPresented: $showingFileImporter,
-            allowedContentTypes: [.pdf],
+            allowedContentTypes: BookFileFormat.contentTypes,
             allowsMultipleSelection: true
         ) { result in
             if case .success(let urls) = result {
@@ -42,23 +42,24 @@ struct BookHelperContentView: View {
             Button {
                 showingFileImporter = true
             } label: {
-                Label("Add PDFs", systemImage: "plus")
+                Label("Add Books", systemImage: "plus")
             }
 
             Button {
                 viewModel.updateSelectedTitles()
             } label: {
-                Label("Rename PDFs", systemImage: "textformat")
+                Label("Rename Books", systemImage: "textformat")
             }
             .disabled(viewModel.renameReadyCount == 0)
 
             Button {
                 viewModel.importSelectedToZotero()
             } label: {
-                Label("Import to Zotero", systemImage: "books.vertical.fill")
+                Label("Import PDFs to Zotero", systemImage: "books.vertical.fill")
             }
             .buttonStyle(.borderedProminent)
             .disabled(viewModel.zoteroReadyCount == 0)
+            .help("Only selected PDFs are imported. EPUB import is not available yet.")
 
             Spacer()
 
@@ -69,7 +70,7 @@ struct BookHelperContentView: View {
             }
             .buttonStyle(.borderless)
             .help("Clear completed")
-            .disabled(!viewModel.items.contains { $0.status == .done })
+            .disabled(!viewModel.items.contains { $0.isComplete })
 
             Button {
                 viewModel.reset()
@@ -99,16 +100,33 @@ struct BookHelperContentView: View {
 
     private var bottomBar: some View {
         HStack {
-            Text(viewModel.statusMessage ?? "\(viewModel.zoteroReadyCount) ready for Zotero")
-                .font(.caption)
-                .foregroundColor(.secondary)
+            if let notice = viewModel.zoteroImportNotice {
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundStyle(.green)
+
+                Text("Successfully imported to Zotero.")
+                    .foregroundStyle(.primary)
+
+                Divider()
+                    .frame(height: 14)
+
+                Button("Show book in Zotero") {
+                    viewModel.showLastImportedBookInZotero()
+                }
+                .buttonStyle(.link)
+                .help(notice.bookTitle)
+            } else {
+                Text(viewModel.statusMessage ?? viewModel.defaultStatusMessage)
+                    .foregroundColor(.secondary)
+            }
 
             Spacer()
 
-            Text("\(viewModel.items.count) PDFs")
+            Text("\(viewModel.items.count) book\(viewModel.items.count == 1 ? "" : "s")")
                 .font(.caption)
                 .foregroundColor(.secondary)
         }
+        .font(.caption)
         .padding(.horizontal, 14)
         .padding(.vertical, 8)
         .background(Color(nsColor: .windowBackgroundColor))
@@ -146,6 +164,11 @@ private struct BookItemRow: View {
                     .help("Remove")
                 }
 
+                if item.format == .epub {
+                    Text("EPUB · Rename only · Zotero import unavailable")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
                 metadataView
             }
         }
@@ -182,6 +205,7 @@ private struct BookItemRow: View {
                     }
                     if let isbn = item.isbn ?? item.metadata?.isbn {
                         isbnView(isbn)
+                            .fixedSize(horizontal: true, vertical: false)
                     }
                     if let source = item.metadata?.source {
                         Label(source, systemImage: "books.vertical")
@@ -191,6 +215,11 @@ private struct BookItemRow: View {
                 .foregroundColor(.secondary)
                 .lineLimit(1)
 
+                if item.status == .renamed {
+                    Text("Renamed")
+                        .font(.caption)
+                        .foregroundColor(.green)
+                }
                 if case .zoteroError(let message) = item.status {
                     Text(message)
                         .font(.caption)
@@ -198,6 +227,12 @@ private struct BookItemRow: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
+
+        case .unreadable(let message):
+            Text(message)
+                .font(.caption)
+                .foregroundColor(.red)
+                .fixedSize(horizontal: false, vertical: true)
 
         case .noISBNFound, .error:
             HStack(spacing: 8) {
@@ -272,7 +307,7 @@ private struct BookItemRow: View {
         switch item.status {
         case .done: return .green
         case .renamed: return .green
-        case .error, .zoteroError: return .red
+        case .error, .unreadable, .zoteroError: return .red
         case .ready: return .accentColor
         case .noISBNFound: return .orange
         default: return .secondary

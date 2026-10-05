@@ -8,24 +8,27 @@ enum BookRenamer {
         var errorDescription: String? {
             switch self {
             case .emptyTitle: return "No title to write"
-            case .renameFailed(let message): return "Could not rename PDF: \(message)"
+            case .renameFailed(let message): return "Could not rename book: \(message)"
             }
         }
     }
 
-    static func rename(pdfURL: URL, metadata: BookMetadata) throws -> URL {
+    static func rename(fileURL: URL, metadata: BookMetadata) throws -> URL {
+        guard BookFileFormat(url: fileURL) != nil else {
+            throw RenameError.renameFailed("Only PDF and EPUB files are supported")
+        }
         let title = metadata.fullTitle.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !title.isEmpty else {
             throw RenameError.emptyTitle
         }
 
-        let targetURL = uniqueTargetURL(for: pdfURL, title: title)
-        guard targetURL != pdfURL else {
-            return pdfURL
+        let targetURL = uniqueTargetURL(for: fileURL, title: title)
+        guard targetURL != fileURL else {
+            return fileURL
         }
 
         do {
-            try FileManager.default.moveItem(at: pdfURL, to: targetURL)
+            try FileManager.default.moveItem(at: fileURL, to: targetURL)
             return targetURL
         } catch {
             throw RenameError.renameFailed(error.localizedDescription)
@@ -35,7 +38,7 @@ enum BookRenamer {
     private static func uniqueTargetURL(for sourceURL: URL, title: String) -> URL {
         let directory = sourceURL.deletingLastPathComponent()
         let baseName = sanitizedFileBaseName(from: title)
-        var target = directory.appendingPathComponent(baseName).appendingPathExtension("pdf")
+        var target = directory.appendingPathComponent(baseName).appendingPathExtension(sourceURL.pathExtension)
 
         if target.standardizedFileURL == sourceURL.standardizedFileURL {
             return sourceURL
@@ -43,7 +46,7 @@ enum BookRenamer {
 
         var counter = 2
         while FileManager.default.fileExists(atPath: target.path) {
-            target = directory.appendingPathComponent("\(baseName) (\(counter))").appendingPathExtension("pdf")
+            target = directory.appendingPathComponent("\(baseName) (\(counter))").appendingPathExtension(sourceURL.pathExtension)
             counter += 1
         }
 
